@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Creates the three topics. Retention for payment + fraud events: 5 years
-# (5 x 365.25 days = 1826 days = 157,766,400,000 ms). Notifications: 7 days.
+# Creates the three topics. Retention for payment + fraud events: 7 years
+# (7 x 365.25 days = 2556.75, rounded up to 2557 days = 220,924,800,000 ms). Notifications: 7 days.
 # Partitions = peak topic throughput / 10 Mb/s per consumer, rounded up with headroom:
 #   payments 1000 Mb/s -> 100 | fraud ~193 Mb/s -> 20 -> 24 | notifications ~273 Mb/s -> 28 -> 30
 set -euo pipefail
@@ -11,7 +11,7 @@ kubectl exec kafka-0 -- kafka-topics \
   --topic payments.payment-lifecycle.v1 \
   --partitions 100 \
   --replication-factor 3 \
-  --config retention.ms=157766400000 \
+  --config retention.ms=220924800000 \
   --config retention.bytes=-1 \
   --config cleanup.policy=delete \
   --config min.insync.replicas=2 \
@@ -24,7 +24,7 @@ kubectl exec kafka-0 -- kafka-topics \
   --topic fraud.fraud-score.v1 \
   --partitions 24 \
   --replication-factor 3 \
-  --config retention.ms=157766400000 \
+  --config retention.ms=220924800000 \
   --config retention.bytes=-1 \
   --config cleanup.policy=delete \
   --config min.insync.replicas=2 \

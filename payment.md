@@ -16,7 +16,7 @@ kubectl exec -it kafka-0 -- kafka-topics \
   --topic payments.payment-lifecycle.v1 \
   --partitions 100 \
   --replication-factor 3 \
-  --config retention.ms=157766400000 \
+  --config retention.ms=220924800000 \
   --config retention.bytes=-1 \
   --config cleanup.policy=delete \
   --config min.insync.replicas=2 \

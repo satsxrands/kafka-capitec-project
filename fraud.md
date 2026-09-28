@@ -14,7 +14,7 @@ kubectl exec -it kafka-0 -- kafka-topics \
   --topic fraud.fraud-score.v1 \
   --partitions 24 \
   --replication-factor 3 \
-  --config retention.ms=157766400000 \
+  --config retention.ms=220924800000 \
   --config retention.bytes=-1 \
   --config cleanup.policy=delete \
   --config min.insync.replicas=2 \

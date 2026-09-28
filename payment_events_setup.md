@@ -79,7 +79,7 @@ scoring.
 | Partitions | 100 | 24 | 30 |
 | Replication factor | 3 | 3 | 3 |
 | min.insync.replicas | 2 | 2 | 2 |
-| retention.ms | 157,766,400,000 (5 years) | 157,766,400,000 (5 years) | 604,800,000 (7 days) |
+| retention.ms | 220,924,800,000 (7 years) | 220,924,800,000 (7 years) | 604,800,000 (7 days) |
 | retention.bytes | -1 (no size cap) | -1 | -1 |
 | cleanup.policy | delete | delete | delete |
 | compression.type | zstd | lz4 | lz4 |
@@ -104,11 +104,11 @@ broker. If 2 brokers are down the topic refuses writes (`NotEnoughReplicasExcept
 rather than accepting data it could lose: for payments, unavailable is better than lost.
 Setting it to 3 would make every broker restart an outage.
 
-**Retention: 5 years, no size cap, for payment and fraud events.** This design keeps
-payment and fraud events for 5 years (1826 days = 157,766,400,000 ms). Note: the brief's
-business context states a 7-year regulatory hold; this POC uses 5 years by design choice.
-Retention is a live topic setting, so moving to 7 years is one `kafka-configs --alter`
-command (`retention.ms=220924800000`) with no data rewrite. `retention.bytes=-1` because
+**Retention: 7 years, no size cap, for payment and fraud events.** The regulatory hold is
+7 years. 7 x 365.25 = 2556.75 days, rounded up to 2557 days (220,924,800,000 ms) so leap
+years can never make a record expire a day early. Retention is also a live topic setting:
+if the regulation changes, one `kafka-configs --alter` command updates it with no data
+rewrite. Time-based only, with `retention.bytes=-1`, because
 a size cap deletes the oldest data when the disk fills, which could silently break the
 retention promise; storage is managed by capacity planning (or tiered storage), not by
 deleting records. Notifications are operational only: 7 days covers replay after an
@@ -121,7 +121,7 @@ erase the INITIATED and AUTHORISED history that audit and reconciliation need.
 
 **Compression.** Payment events are repetitive JSON (the same field names every time),
 which compresses well. Payments use **zstd**: the best ratio, which matters most on the
-topic holding 5 years of data, at a CPU cost that fits the 150 ms budget. Fraud and
+topic holding 7 years of data, at a CPU cost that fits the 150 ms budget. Fraud and
 notification topics use **lz4**, the fastest codec, because their SLAs are tighter and
 their retention is short or small. Setting the codec on the topic as well as the
 producer means the broker never recompresses.
@@ -199,7 +199,7 @@ two different `event_id`s, which is why consumers also de-duplicate on `event_id
 **Serialization: JSON for the POC, Avro in production.** The console tools read and
 write text, so JSON keeps the POC runnable and readable. In production, Avro with a
 Schema Registry: records are much smaller (no field names repeated in every record,
-which matters over 5 years of retention), and the registry rejects incompatible schema
+which matters over 7 years of retention), and the registry rejects incompatible schema
 changes before they reach consumers. Protobuf is equally valid; Avro fits the
 Kafka/Confluent tooling best.
 
@@ -284,13 +284,13 @@ Commands: `scripts/00-create-topics.sh` (also in `payment.md`, `fraud.md`,
 ```
 Topic: payments.payment-lifecycle.v1  PartitionCount: 100  ReplicationFactor: 3
   Configs: compression.type=zstd,min.insync.replicas=2,cleanup.policy=delete,
-           retention.ms=157766400000,max.message.bytes=262144,retention.bytes=-1
+           retention.ms=220924800000,max.message.bytes=262144,retention.bytes=-1
   Partition: 0  Leader: 1  Replicas: 1,2,0  Isr: 1,2,0
   Partition: 1  Leader: 2  Replicas: 2,0,1  Isr: 2,0,1
   Partition: 2  Leader: 0  Replicas: 0,1,2  Isr: 0,1,2
 Topic: fraud.fraud-score.v1  PartitionCount: 24  ReplicationFactor: 3
   Configs: compression.type=lz4,min.insync.replicas=2,cleanup.policy=delete,
-           retention.ms=157766400000,max.message.bytes=262144,retention.bytes=-1
+           retention.ms=220924800000,max.message.bytes=262144,retention.bytes=-1
 Topic: notifications.payment-notification.v1  PartitionCount: 30  ReplicationFactor: 3
   Configs: compression.type=lz4,min.insync.replicas=2,cleanup.policy=delete,
            retention.ms=604800000,max.message.bytes=262144,retention.bytes=-1
@@ -486,12 +486,10 @@ batching, which a 2 s SLA can afford.
    auto-commit every 1 s; a crash could skip up to 1 s of events. The production
    consumer would commit after the output write, and de-duplicate on `event_id`
    downstream to make redelivery harmless.
-5. **zstd vs lz4.** zstd on the 5-year topic for storage, lz4 on the latency-sensitive
+5. **zstd vs lz4.** zstd on the 7-year topic for storage, lz4 on the latency-sensitive
    topics for speed.
 6. **JSON vs Avro.** JSON for a readable CLI POC; Avro + Schema Registry in production for
    size and enforced compatibility.
-7. **Retention 5 years.** Chosen for this design; the brief's 7-year figure is one live
-   config change away (2.2).
 
 ---
 
