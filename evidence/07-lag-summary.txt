@@ -1,0 +1,4 @@
+fraud-scoring-service    partitions=100  total lag=0
+notification-dispatcher  partitions=30   total lag=0
+notification-service     partitions=100  total lag=0
+payment-audit-archiver   partitions=100  total lag=0

@@ -1,0 +1,12 @@
+payments checked: 60, events: 219, violations: 0
+
+Journey (success) PAY-20260928-00000: partition 51
+  offset  0  PAYMENT_INITIATED
+  offset  1  PAYMENT_AUTHORISED
+  offset  2  PAYMENT_VALIDATED
+  offset  3  PAYMENT_COMPLETED
+
+Journey (failure) PAY-20260928-00009: partition 5
+  offset  0  PAYMENT_INITIATED
+  offset  1  PAYMENT_AUTHORISED
+  offset  2  PAYMENT_INVALIDATED

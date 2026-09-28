@@ -1,0 +1,1 @@
+Fraud events produced: 60

@@ -1,0 +1,6 @@
+       fraud all                            n=60  min=8 ms  median=11 ms  p95=76 ms  max=80 ms  (SLA < 50 ms)
+       fraud steady state (after first 10)  n=50  min=8 ms  median=10 ms  p95=13 ms  max=14 ms  (SLA < 50 ms)
+       fraud first 10 in send order: [80, 76, 76, 76, 76, 76, 70, 75, 19, 9]
+notification all                            n=66  min=23 ms  median=306 ms  p95=524 ms  max=527 ms  (SLA < 2000 ms)
+notification steady state (after first 10)  n=56  min=23 ms  median=268 ms  p95=486 ms  max=527 ms  (SLA < 2000 ms)
+notification first 10 in send order: [524, 524, 524, 524, 525, 518, 523, 490, 403, 306]
