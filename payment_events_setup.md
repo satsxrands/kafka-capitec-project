@@ -322,7 +322,7 @@ so reruns reproduce the same payments) into the console producer (command in
 
 ```json
 {"event_id":"37f8a88b-17fc-695a-07a0-ca6e0822e8f3","event_type":"PAYMENT_INITIATED",
- "schema_version":1,"occurred_at":"2026-09-28T09:14:34.535Z","payment_id":"PAY-20260928-00000",
+ "schema_version":1,"occurred_at":"2026-09-28T14:36:50.807Z","payment_id":"PAY-20260928-00000",
  "customer_id":"CUST-5506","source_account_masked":"****5012","beneficiary_account_masked":"****4657",
  "amount_cents":1220528,"currency":"ZAR","channel":"APP","payment_type":"EFT",
  "device_id":"DEV-NEW-704","geo_country":"RU"}
@@ -330,7 +330,7 @@ so reruns reproduce the same payments) into the console producer (command in
 
 ```json
 {"event_id":"05628059-568c-c69b-1064-005c3985c3cf","event_type":"PAYMENT_INVALIDATED",
- "schema_version":1,"occurred_at":"2026-09-28T09:14:34.940Z","payment_id":"PAY-20260928-00009",
+ "schema_version":1,"occurred_at":"2026-09-28T14:36:51.212Z","payment_id":"PAY-20260928-00009",
  "customer_id":"CUST-4470","source_account_masked":"****9835","beneficiary_account_masked":"****4295",
  "amount_cents":187895,"currency":"ZAR","channel":"USSD","payment_type":"CARD_PURCHASE",
  "device_id":"DEV-787","geo_country":"ZA","reason_code":"BENEFICIARY_ACCOUNT_CLOSED"}
@@ -452,12 +452,12 @@ notification event written (`scripts/verify_latency.py`, `evidence/09-latency.tx
 
 | Path | Scope | Median | p95 | Max | SLA |
 |---|---|---|---|---|---|
-| Fraud | steady state | 10 ms | 13 ms | 14 ms | < 50 ms, met |
-| Fraud | all 60, incl. cold start | 11 ms | 76 ms | 80 ms | first 8 missed |
-| Notification | steady state | 268 ms | 486 ms | 527 ms | < 2000 ms, met |
-| Notification | all 66 | 306 ms | 524 ms | 527 ms | met |
+| Fraud | steady state | 10 ms | 12 ms | 15 ms | < 50 ms, met |
+| Fraud | all 60, incl. cold start | 11 ms | 50 ms | 50 ms | first 7 at the limit |
+| Notification | steady state | 260 ms | 480 ms | 493 ms | < 2000 ms, met |
+| Notification | all 66 | 298 ms | 514 ms | 514 ms | met |
 
-The first 8 fraud events took 70-80 ms, every later one 8-19 ms: the fraud producer's
+The first 7 fraud events took 49-50 ms, right at the limit, and every later one 7-15 ms: the fraud producer's
 first send has to fetch topic metadata and register a producer id (needed for
 idempotence). A production service does both at startup, before taking traffic.
 The notification figures sit around 500 ms by design: that is `fetch.max.wait.ms=500`
