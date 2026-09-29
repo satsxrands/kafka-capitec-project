@@ -1,6 +1,6 @@
-       fraud all                            n=60  min=7 ms  median=11 ms  p95=50 ms  max=50 ms  (SLA < 50 ms)
-       fraud steady state (after first 10)  n=50  min=7 ms  median=10 ms  p95=12 ms  max=15 ms  (SLA < 50 ms)
-       fraud first 10 in send order: [50, 50, 50, 50, 50, 50, 49, 13, 11, 11]
-notification all                            n=66  min=11 ms  median=298 ms  p95=514 ms  max=514 ms  (SLA < 2000 ms)
-notification steady state (after first 10)  n=56  min=11 ms  median=260 ms  p95=480 ms  max=493 ms  (SLA < 2000 ms)
-notification first 10 in send order: [514, 514, 514, 514, 514, 508, 497, 408, 309, 223]
+       fraud all                            n=60  min=8 ms  median=11 ms  p95=52 ms  max=55 ms  (SLA < 50 ms)
+       fraud steady state (after first 10)  n=50  min=8 ms  median=11 ms  p95=14 ms  max=19 ms  (SLA < 50 ms)
+       fraud first 10 in send order: [55, 52, 52, 47, 52, 52, 43, 11, 11, 12]
+notification all                            n=66  min=22 ms  median=272 ms  p95=558 ms  max=559 ms  (SLA < 2000 ms)
+notification steady state (after first 10)  n=56  min=22 ms  median=246 ms  p95=474 ms  max=503 ms  (SLA < 2000 ms)
+notification first 10 in send order: [559, 559, 559, 551, 558, 558, 503, 410, 320, 231]

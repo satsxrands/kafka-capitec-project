@@ -322,7 +322,7 @@ so reruns reproduce the same payments) into the console producer (command in
 
 ```json
 {"event_id":"37f8a88b-17fc-695a-07a0-ca6e0822e8f3","event_type":"PAYMENT_INITIATED",
- "schema_version":1,"occurred_at":"2026-09-28T14:36:50.807Z","payment_id":"PAY-20260928-00000",
+ "schema_version":1,"occurred_at":"2026-09-29T04:43:28.861Z","payment_id":"PAY-20260929-00000",
  "customer_id":"CUST-5506","source_account_masked":"****5012","beneficiary_account_masked":"****4657",
  "amount_cents":1220528,"currency":"ZAR","channel":"APP","payment_type":"EFT",
  "device_id":"DEV-NEW-704","geo_country":"RU"}
@@ -330,21 +330,21 @@ so reruns reproduce the same payments) into the console producer (command in
 
 ```json
 {"event_id":"05628059-568c-c69b-1064-005c3985c3cf","event_type":"PAYMENT_INVALIDATED",
- "schema_version":1,"occurred_at":"2026-09-28T14:36:51.212Z","payment_id":"PAY-20260928-00009",
+ "schema_version":1,"occurred_at":"2026-09-29T04:43:29.266Z","payment_id":"PAY-20260929-00009",
  "customer_id":"CUST-4470","source_account_masked":"****9835","beneficiary_account_masked":"****4295",
  "amount_cents":187895,"currency":"ZAR","channel":"USSD","payment_type":"CARD_PURCHASE",
  "device_id":"DEV-787","geo_country":"ZA","reason_code":"BENEFICIARY_ACCOUNT_CLOSED"}
 ```
 
 **Evidence of production:** the audit consumer read back all 219 records with their
-partition and offset (`evidence/audit-archive.txt`), e.g. payment `PAY-20260928-00000`:
+partition and offset (`evidence/audit-archive.txt`), e.g. payment `PAY-20260929-00000`:
 
 ```
-Partition:51|Offset:0|PAY-20260928-00000|{..."event_type":"PAYMENT_INITIATED"...}
-Partition:51|Offset:1|PAY-20260928-00000|{..."event_type":"PAYMENT_AUTHORISED"...}
+Partition:97|Offset:0|PAY-20260929-00000|{..."event_type":"PAYMENT_INITIATED"...}
+Partition:97|Offset:1|PAY-20260929-00000|{..."event_type":"PAYMENT_AUTHORISED"...}
 ```
 
-The 60 payments landed on 43 of the 100 partitions (with 60 keys and 100 partitions some
+The 60 payments landed on 46 of the 100 partitions (with 60 keys and 100 partitions some
 share a partition and some partitions stay empty, as expected from key hashing).
 
 **Decisions made during testing:** the producer is paced (one event per 20 ms) rather than
@@ -372,7 +372,7 @@ Checks: 60 fraud events = 60 initiated payments. 45 APPROVED = 45 validated. 21 
 
 ```json
 {"event_id":"fraud-37f8a88b-17fc-695a-07a0-ca6e0822e8f3","event_type":"FRAUD_SCORE_HIGH",
- "payment_id":"PAY-20260928-00000","source_event_id":"37f8a88b-17fc-695a-07a0-ca6e0822e8f3",
+ "payment_id":"PAY-20260929-00000","source_event_id":"37f8a88b-17fc-695a-07a0-ca6e0822e8f3",
  "score":60,"band":"HIGH","reasons":["NEW_DEVICE","FOREIGN_GEO"]}
 ```
 
@@ -380,7 +380,7 @@ Checks: 60 fraud events = 60 initiated payments. 45 APPROVED = 45 validated. 21 
 
 ```json
 {"event_id":"notif-05628059-568c-c69b-1064-005c3985c3cf","event_type":"NOTIFICATION_PAYMENT_FAILED",
- "payment_id":"PAY-20260928-00009","customer_id":"CUST-4470","channel":"PUSH",
+ "payment_id":"PAY-20260929-00009","customer_id":"CUST-4470","channel":"PUSH",
  "message":"Your payment of R1878.95 could not be processed.","reason_code":"BENEFICIARY_ACCOUNT_CLOSED"}
 ```
 
@@ -404,9 +404,9 @@ kubectl exec kafka-0 -- kafka-consumer-groups --bootstrap-server kafka-service:9
 
 ```
 GROUP                 TOPIC                         PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
-fraud-scoring-service payments.payment-lifecycle.v1 16         4               4               0
-fraud-scoring-service payments.payment-lifecycle.v1 24         11              11              0
-fraud-scoring-service payments.payment-lifecycle.v1 32         4               4               0
+fraud-scoring-service payments.payment-lifecycle.v1 24         4               4               0
+fraud-scoring-service payments.payment-lifecycle.v1 57         8               8               0
+fraud-scoring-service payments.payment-lifecycle.v1 15         3               3               0
 ...
 ```
 
@@ -430,20 +430,20 @@ validated, then completed).
 ```
 payments checked: 60, events: 219, violations: 0
 
-Journey (success) PAY-20260928-00000: partition 51
+Journey (success) PAY-20260929-00000: partition 97
   offset  0  PAYMENT_INITIATED
   offset  1  PAYMENT_AUTHORISED
   offset  2  PAYMENT_VALIDATED
   offset  3  PAYMENT_COMPLETED
 
-Journey (failure) PAY-20260928-00009: partition 5
+Journey (failure) PAY-20260929-00009: partition 10
   offset  0  PAYMENT_INITIATED
   offset  1  PAYMENT_AUTHORISED
   offset  2  PAYMENT_INVALIDATED
 ```
 
 The check was proven able to fail: swapping two offsets of one payment in a copy of the
-archive makes it report `ORDER VIOLATION PAY-20260928-00000` and `violations: 1`.
+archive makes it report `ORDER VIOLATION PAY-20260929-00000` and `violations: 1`.
 
 ### 7.3 End-to-end latency against the SLAs
 
@@ -452,12 +452,12 @@ notification event written (`scripts/verify_latency.py`, `evidence/09-latency.tx
 
 | Path | Scope | Median | p95 | Max | SLA |
 |---|---|---|---|---|---|
-| Fraud | steady state | 10 ms | 12 ms | 15 ms | < 50 ms, met |
-| Fraud | all 60, incl. cold start | 11 ms | 50 ms | 50 ms | first 7 at the limit |
-| Notification | steady state | 260 ms | 480 ms | 493 ms | < 2000 ms, met |
-| Notification | all 66 | 298 ms | 514 ms | 514 ms | met |
+| Fraud | steady state | 11 ms | 14 ms | 19 ms | < 50 ms, met |
+| Fraud | all 60, incl. cold start | 11 ms | 52 ms | 55 ms | 5 of the first 7 missed |
+| Notification | steady state | 246 ms | 474 ms | 503 ms | < 2000 ms, met |
+| Notification | all 66 | 272 ms | 558 ms | 559 ms | met |
 
-The first 7 fraud events took 49-50 ms, right at the limit, and every later one 7-15 ms: the fraud producer's
+The first 7 fraud events took 43-55 ms (5 of them over 50 ms), and every later one 8-19 ms: the fraud producer's
 first send has to fetch topic metadata and register a producer id (needed for
 idempotence). A production service does both at startup, before taking traffic.
 The notification figures sit around 500 ms by design: that is `fetch.max.wait.ms=500`
